@@ -105,16 +105,84 @@ export default function App() {
     // The flow is very similar to the `getArticles` function.
     // You'll know what to do! Use log statements or breakpoints
     // to inspect the response from the server.
+    setMessage('')
+    setSpinnerOn(true)
+
+    const token = localStorage.getItem('token')
+    fetch(articlesUrl, {
+      method: 'POST',
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': token
+      }),
+      body: JSON.stringify(article)
+    })
+      .then(res => res.json()
+        .then(data => {
+          if (!res.ok) throw new Error(data.message)
+          setArticles([...articles, data.article])
+          setMessage(data.message)
+        }))
+      .catch(err => {
+        setMessage(err.message || 'An error occurred. Please try again.')
+      })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   const updateArticle = ({ article_id, article }) => {
     // ✨ implement
     // You got this!
+    setMessage('')
+    setSpinnerOn(true)
+
+    const token = localStorage.getItem('token')
+    fetch(`${articlesUrl}/${article_id}`, {
+      method: 'PUT',
+      headers: new Headers({
+        'Content-Type': 'application/json',
+        'Authorization': token
+      }),
+      body: JSON.stringify(article)
+    })
+      .then(res => res.json()
+        .then(data => {
+          if (!res.ok) throw new Error(data.message);
+          setArticles(articles.map(a => (a.id === article_id ? data.article : a)))
+          setMessage(data.message)
+        }))
+      .catch(err => {
+        setMessage(err.message || 'An error occurred. Please try again.')
+      })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   const deleteArticle = article_id => {
     // ✨ implement
-    
+    setMessage('')
+    setSpinnerOn(true)
+
+    const token = localStorage.getItem('token')
+    fetch(`${articlesUrl}/${article_id}`, {
+      method: 'DELETE',
+      headers: new Headers({
+        'Authorization': token
+      })
+    })
+      .then(res => res.json().then(data => {
+        if (!res.ok) throw new Error(data.message)
+        setArticles(articles.filter(a => a.id !== article_id))
+        setMessage(data.message)
+      }))
+      .catch(err => {
+        setMessage(err.message || 'An error occurred. Please try again.')
+      })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   return (

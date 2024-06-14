@@ -34,7 +34,6 @@ export default function Articles(
         !articles.length
           ? 'No articles yet'
           : articles.map(art => {
-            const isCurrentArticle = art.article_id === currentArticleId
             return (
               <div className="article" key={art.article_id}>
                 <div>
@@ -43,8 +42,8 @@ export default function Articles(
                   <p>Topic: {art.topic}</p>
                 </div>
                 <div>
-                  <button disabled={!isCurrentArticle} onClick={() => setCurrentArticleId(art.article_id)}>Edit</button>
-                  <button disabled={!isCurrentArticle} onClick={() => deleteArticle(art.article_id)}>Delete</button>
+                  <button disabled={false} onClick={() => setCurrentArticleId(art.article_id)}>Edit</button>
+                  <button disabled={false} onClick={() => deleteArticle(art.article_id)}>Delete</button>
                 </div>
               </div>
             )
