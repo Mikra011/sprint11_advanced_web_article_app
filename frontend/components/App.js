@@ -5,7 +5,6 @@ import LoginForm from './LoginForm'
 import Message from './Message'
 import ArticleForm from './ArticleForm'
 import Spinner from './Spinner'
-//
 
 const articlesUrl = 'http://localhost:9000/api/articles'
 const loginUrl = 'http://localhost:9000/api/login'
@@ -19,8 +18,8 @@ export default function App() {
 
   // ✨ Research `useNavigate` in React Router v.6
   const navigate = useNavigate()
-  const redirectToLogin = () => { /* ✨ implement */ }
-  const redirectToArticles = () => { /* ✨ implement */ }
+  const redirectToLogin = () => { navigate('/') }
+  const redirectToArticles = () => { navigate('/articles') }
 
   const logout = () => {
     // ✨ implement
@@ -28,6 +27,9 @@ export default function App() {
     // and a message saying "Goodbye!" should be set in its proper state.
     // In any case, we should redirect the browser back to the login screen,
     // using the helper above.
+    localStorage.removeItem('token')
+    setMessage('Goodbye!')
+    redirectToLogin()
   }
 
   const login = ({ username, password }) => {
@@ -37,6 +39,26 @@ export default function App() {
     // On success, we should set the token to local storage in a 'token' key,
     // put the server success message in its proper state, and redirect
     // to the Articles screen. Don't forget to turn off the spinner!
+    setMessage('')
+    setSpinnerOn(true)
+
+    fetch(loginUrl, {
+      method: 'POST',
+      headers: new Headers({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ username, password })
+    })
+      .then(res => res.json().then(data => {
+        if (!res.ok) throw new Error(data.message)
+        localStorage.setItem('token', data.token)
+        setMessage(data.message)
+        redirectToArticles()
+      }))
+      .catch(err => {
+        setMessage(err.message || 'An error occurred. Please try again.')
+      })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   const getArticles = () => {
@@ -79,7 +101,7 @@ export default function App() {
           <NavLink id="articlesScreen" to="/articles">Articles</NavLink>
         </nav>
         <Routes>
-          <Route path="/" element={<LoginForm />} />
+          <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
             <>
               <ArticleForm />
