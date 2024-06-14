@@ -16,7 +16,7 @@ export default function LoginForm({ login }) {
 
   const onSubmit = evt => {
     evt.preventDefault()
-    // ✨ implement!
+    // ✨ implement
     login(values)
   }
 

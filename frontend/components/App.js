@@ -47,12 +47,13 @@ export default function App() {
       headers: new Headers({ 'Content-Type': 'application/json' }),
       body: JSON.stringify({ username, password })
     })
-      .then(res => res.json().then(data => {
-        if (!res.ok) throw new Error(data.message)
-        localStorage.setItem('token', data.token)
-        setMessage(data.message)
-        redirectToArticles()
-      }))
+      .then(res => res.json()
+        .then(data => {
+          if (!res.ok) throw new Error(data.message)
+          localStorage.setItem('token', data.token)
+          setMessage(data.message)
+          redirectToArticles()
+        }))
       .catch(err => {
         setMessage(err.message || 'An error occurred. Please try again.')
       })
@@ -70,6 +71,33 @@ export default function App() {
     // If something goes wrong, check the status of the response:
     // if it's a 401 the token might have gone bad, and we should redirect to login.
     // Don't forget to turn off the spinner!
+    setMessage('')
+    setSpinnerOn(true)
+
+    const token = localStorage.getItem('token')
+    fetch(articlesUrl, {
+      method: 'GET',
+      headers: new Headers({
+        'Authorization': token
+      })
+    })
+      .then(res => res.json()
+        .then(data => {
+          if (!res.ok) {
+            if (res.status === 401) {
+              redirectToLogin()
+            }
+            throw new Error(data.message)
+          }
+          setArticles(data.articles)
+          setMessage(data.message)
+        }))
+      .catch(err => {
+        setMessage(err.message || 'An error occurred. Please try again.')
+      })
+      .finally(() => {
+        setSpinnerOn(false)
+      })
   }
 
   const postArticle = article => {
@@ -86,13 +114,14 @@ export default function App() {
 
   const deleteArticle = article_id => {
     // ✨ implement
+    
   }
 
   return (
     // ✨ fix the JSX: `Spinner`, `Message`, `LoginForm`, `ArticleForm` and `Articles` expect props ❗
     <>
-      <Spinner />
-      <Message />
+      <Spinner on={spinnerOn} />
+      <Message message={message} />
       <button id="logout" onClick={logout}>Logout from app</button>
       <div id="wrapper" style={{ opacity: spinnerOn ? "0.25" : "1" }}> {/* <-- do not change this line */}
         <h1>Advanced Web Applications</h1>
@@ -105,7 +134,13 @@ export default function App() {
           <Route path="articles" element={
             <>
               <ArticleForm />
-              <Articles />
+              <Articles
+                articles={articles}
+                getArticles={getArticles}
+                deleteArticle={deleteArticle}
+                setCurrentArticleId={setCurrentArticleId}
+                currentArticleId={currentArticleId}
+              />
             </>
           } />
         </Routes>
