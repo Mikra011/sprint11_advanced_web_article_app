@@ -20,10 +20,15 @@ export default function Articles(
 
   useEffect(() => {
     // ✨ grab the articles here, on first render only
-    if (token) {
-      getArticles()
-    }
-  }, [token])
+    getArticles()
+  }, [])
+
+  // useEffect(() => {
+  //   // ✨ grab the articles here, on first render only
+  //   if (token) {
+  //     getArticles()
+  //   }
+  // }, [token])
 
   return (
     // ✨ fix the JSX: replace `Function.prototype` with actual functions

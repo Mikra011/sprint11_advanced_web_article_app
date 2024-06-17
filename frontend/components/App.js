@@ -13,7 +13,7 @@ export default function App() {
   // ✨ MVP can be achieved with these states
   const [message, setMessage] = useState('')
   const [articles, setArticles] = useState([])
-  const [currentArticleId, setCurrentArticleId] = useState()
+  const [currentArticleId, setCurrentArticleId] = useState(null)
   const [spinnerOn, setSpinnerOn] = useState(false)
 
   // ✨ Research `useNavigate` in React Router v.6
@@ -49,6 +49,8 @@ export default function App() {
     })
       .then(res => res.json()
         .then(data => {
+          console.log('data is => ', data)
+          console.log('res is => ', res)
           if (!res.ok) throw new Error(data.message)
           localStorage.setItem('token', data.token)
           setMessage(data.message)
@@ -111,11 +113,11 @@ export default function App() {
     const token = localStorage.getItem('token')
     fetch(articlesUrl, {
       method: 'POST',
-      headers: new Headers({
+      headers: {
         'Content-Type': 'application/json',
-        'Authorization': token
-      }),
-      body: JSON.stringify(article)
+        'Authorization': token,
+      },
+      body: JSON.stringify(article),
     })
       .then(res => res.json()
         .then(data => {
@@ -140,18 +142,17 @@ export default function App() {
     const token = localStorage.getItem('token')
     fetch(`${articlesUrl}/${article_id}`, {
       method: 'PUT',
-      headers: new Headers({
+      headers: {
         'Content-Type': 'application/json',
-        'Authorization': token
-      }),
-      body: JSON.stringify(article)
+        'Authorization': token,
+      },
+      body: JSON.stringify(article),
     })
-      .then(res => res.json()
-        .then(data => {
-          if (!res.ok) throw new Error(data.message);
-          setArticles(articles.map(a => (a.id === article_id ? data.article : a)))
-          setMessage(data.message)
-        }))
+      .then(res => res.json().then(data => {
+        if (!res.ok) throw new Error(data.message)
+        setArticles(articles.map(a => a.article_id === article_id ? data.article : a))
+        setMessage(data.message)
+      }))
       .catch(err => {
         setMessage(err.message || 'An error occurred. Please try again.')
       })
@@ -168,13 +169,13 @@ export default function App() {
     const token = localStorage.getItem('token')
     fetch(`${articlesUrl}/${article_id}`, {
       method: 'DELETE',
-      headers: new Headers({
-        'Authorization': token
-      })
+      headers: {
+        'Authorization': token,
+      },
     })
       .then(res => res.json().then(data => {
         if (!res.ok) throw new Error(data.message)
-        setArticles(articles.filter(a => a.id !== article_id))
+        setArticles(articles.filter(a => a.article_id !== article_id))
         setMessage(data.message)
       }))
       .catch(err => {
@@ -201,7 +202,12 @@ export default function App() {
           <Route path="/" element={<LoginForm login={login} />} />
           <Route path="articles" element={
             <>
-              <ArticleForm />
+              <ArticleForm
+                postArticle={postArticle}
+                updateArticle={updateArticle}
+                setCurrentArticleId={setCurrentArticleId}
+                currentArticle={articles.find(a => a.article_id === currentArticleId)}
+              />
               <Articles
                 articles={articles}
                 getArticles={getArticles}
